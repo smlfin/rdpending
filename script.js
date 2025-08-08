@@ -8,6 +8,26 @@ document.addEventListener('DOMContentLoaded', () => {
     let rdAccounts = [];
     let uniqueAgents = [];
 
+    // Function to calculate if an account is due
+    function isDue(account) {
+        const startDate = new Date(account['Deposit Date']);
+        const installmentAmount = parseFloat(account['Installment'].replace(/,/g, ''));
+        const totalPaid = parseFloat(account['Paid Amt'].replace(/,/g, ''));
+
+        if (isNaN(startDate) || isNaN(installmentAmount) || isNaN(totalPaid) || installmentAmount === 0) {
+            return false;
+        }
+
+        const paidInstallments = Math.floor(totalPaid / installmentAmount);
+        const nextDueDate = new Date(startDate);
+        nextDueDate.setMonth(startDate.getMonth() + paidInstallments + 1);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize to the beginning of the day
+
+        return today >= nextDueDate;
+    }
+
     async function fetchCsvData() {
         try {
             const response = await fetch(csvUrl);
@@ -46,17 +66,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Calculate summary: A case is pending if the 'Due No' is greater than 0
-        const pendingCases = data.filter(account => {
-            const dueNo = parseInt(account['Due No'], 10);
-            return !isNaN(dueNo) && dueNo > 0;
-        }).length;
-        
-        // Calculate total pending amount more reliably
+        // Calculate summary based on the new isDue logic
+        const pendingCases = data.filter(isDue).length;
         const totalPendingAmount = data.reduce((sum, account) => {
-            const pendingAmt = parseFloat(account['Pending Amount'].replace(/,/g, ''));
-            const dueNo = parseInt(account['Due No'], 10);
-            return sum + ((!isNaN(pendingAmt) && !isNaN(dueNo) && dueNo > 0) ? pendingAmt : 0);
+            if (isDue(account)) {
+                const pendingAmt = parseFloat(account['Pending Amount'].replace(/,/g, ''));
+                return sum + (isNaN(pendingAmt) ? 0 : pendingAmt);
+            }
+            return sum;
         }, 0);
 
         // Sort data by "Due No" in descending order (highest due number first)
@@ -99,7 +116,9 @@ document.addEventListener('DOMContentLoaded', () => {
             resultsContainer.appendChild(card);
         });
     }
-
+    
+    // ... [Rest of the JavaScript code for autocomplete and event listeners remains unchanged] ...
+    
     let currentFocus = -1;
 
     function showSuggestions(searchTerm) {
@@ -137,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         displayResults(filteredAccounts, name);
     }
-
+    
     // Event listeners
     searchInput.addEventListener('input', (e) => {
         showSuggestions(e.target.value);
