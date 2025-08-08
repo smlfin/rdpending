@@ -1,0 +1,197 @@
+:root {
+    --primary-color: #007BFF;
+    --secondary-color: #6c757d;
+    --background-color: #f8f9fa;
+    --card-background: #ffffff;
+    --border-color: #dee2e6;
+    --text-color: #343a40;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--background-color);
+    margin: 0;
+    padding: 20px;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--card-background);
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+}
+
+h1 {
+    text-align: center;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-weight: 300;
+}
+
+.search-box {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#agent-search {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    box-sizing: border-box;
+    transition: border-color 0.3s;
+}
+
+#agent-search:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+#results {
+    margin-top: 20px;
+}
+
+.account-card {
+    border: 1px solid var(--border-color);
+    border-left: 5px solid var(--primary-color);
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    background-color: var(--card-background);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.account-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--box-shadow);
+}
+
+.account-card h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.account-card p {
+    margin: 5px 0;
+    color: var(--secondary-color);
+}
+
+.account-card strong {
+    color: var(--text-color);
+    font-weight: 600;
+}
+/* Existing CSS remains the same... */
+
+.autocomplete-items {
+    position: absolute;
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    z-index: 99;
+    max-height: 200px;
+    overflow-y: auto;
+    width: calc(100% - 40px); /* Adjusting for padding */
+    background-color: var(--card-background);
+    box-shadow: var(--box-shadow);
+    display: none;
+}
+
+.autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.autocomplete-items div:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-items div:hover,
+.autocomplete-items .autocomplete-active {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.search-box {
+    position: relative; /* To position the autocomplete suggestions relative to this box */
+    margin-bottom: 20px;
+    text-align: center;
+}
+/* Existing styles from previous versions remain the same... */
+
+.summary-card {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.08);
+}
+
+.summary-card h2 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-weight: 500;
+    font-size: 1.5em;
+}
+
+.summary-stats {
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
+    margin-top: 15px;
+}
+
+.stat-item {
+    flex: 1;
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat-item .value {
+    font-size: 1.8em;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.stat-item .label {
+    font-size: 0.9em;
+    color: var(--secondary-color);
+    margin-top: 5px;
+}
+
+/* Modify the account card to be more tile-like */
+#results {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.account-card {
+    border: 1px solid var(--border-color);
+    border-left: 5px solid var(--primary-color);
+    padding: 15px;
+    border-radius: 8px; /* Slightly more rounded corners for a modern tile look */
+    background-color: var(--card-background);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+}
+
+.account-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Slightly larger shadow on hover */
+}
