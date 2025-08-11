@@ -8,26 +8,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let rdAccounts = [];
     let uniqueAgents = [];
 
-    // Function to calculate if an account is due
-    function isDue(account) {
-        const startDate = new Date(account['Deposit Date']);
-        const installmentAmount = parseFloat(account['Installment'].replace(/,/g, ''));
-        const totalPaid = parseFloat(account['Paid Amt'].replace(/,/g, ''));
-
-        if (isNaN(startDate) || isNaN(installmentAmount) || isNaN(totalPaid) || installmentAmount === 0) {
-            return false;
-        }
-
-        const paidInstallments = Math.floor(totalPaid / installmentAmount);
-        const nextDueDate = new Date(startDate);
-        nextDueDate.setMonth(startDate.getMonth() + paidInstallments + 1);
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize to the beginning of the day
-
-        return today >= nextDueDate;
+  function isDue(account) {
+    const startDate = new Date(account['Deposit Date']);
+    const installmentAmount = parseFloat(account['Installment'].replace(/,/g, ''));
+    const totalPaid = parseFloat(account['Paid Amt'].replace(/,/g, ''));
+    
+    // Check for invalid data
+    if (isNaN(startDate) || isNaN(installmentAmount) || isNaN(totalPaid) || installmentAmount <= 0) {
+        return false;
     }
 
+    const today = new Date();
+    
+    // Calculate the number of months since the start date
+    const monthsPassed = (today.getFullYear() - startDate.getFullYear()) * 12 + (today.getMonth() - startDate.getMonth());
+
+    // Calculate how many installments have actually been paid
+    const paidInstallments = Math.floor(totalPaid / installmentAmount);
+    
+    // The account is considered due if the number of paid installments
+    // is less than the number of months that have passed since the start date.
+    return paidInstallments < monthsPassed;
+}
     async function fetchCsvData() {
         try {
             const response = await fetch(csvUrl);
@@ -57,67 +59,62 @@ document.addEventListener('DOMContentLoaded', () => {
         return data;
     }
 
-    function displayResults(data, agentName) {
-        summaryContainer.innerHTML = '';
-        resultsContainer.innerHTML = '';
+   function displayResults(data, agentName) {
+    summaryContainer.innerHTML = '';
+    resultsContainer.innerHTML = '';
 
-        if (data.length === 0) {
-            resultsContainer.innerHTML = `<p class="no-results">No accounts found for ${agentName}.</p>`;
-            return;
-        }
+    if (data.length === 0) {
+        resultsContainer.innerHTML = `<p class="no-results">No accounts found for ${agentName}.</p>`;
+        return;
+    }
 
-        // Calculate summary based on the new isDue logic
-        const pendingCases = data.filter(isDue).length;
-        const totalPendingAmount = data.reduce((sum, account) => {
-            if (isDue(account)) {
-                const pendingAmt = parseFloat(account['Pending Amount'].replace(/,/g, ''));
-                return sum + (isNaN(pendingAmt) ? 0 : pendingAmt);
-            }
-            return sum;
-        }, 0);
+    // Calculate summary based on ALL accounts for the agent
+    const pendingCases = data.length;
+    const totalPendingAmount = data.reduce((sum, account) => {
+        const pendingAmt = parseFloat(account['Pending Amount'].replace(/,/g, ''));
+        return sum + (isNaN(pendingAmt) ? 0 : pendingAmt);
+    }, 0);
 
-        // Sort data by "Due No" in descending order (highest due number first)
-        const sortedData = data.sort((a, b) => {
-            const dueA = parseInt(a['Due No'], 10) || 0;
-            const dueB = parseInt(b['Due No'], 10) || 0;
-            return dueB - dueA;
-        });
+    // Sort data by "Due No" in descending order (highest due number first)
+    const sortedData = data.sort((a, b) => {
+        const dueA = parseInt(a['Due No'], 10) || 0;
+        const dueB = parseInt(b['Due No'], 10) || 0;
+        return dueB - dueA;
+    });
 
-        // Display summary
-        summaryContainer.innerHTML = `
-            <div class="summary-card">
-                <h2>Summary for ${agentName}</h2>
-                <div class="summary-stats">
-                    <div class="stat-item">
-                        <span class="value">${pendingCases}</span>
-                        <span class="label">Pending Cases</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="value">₹${totalPendingAmount.toLocaleString('en-IN')}</span>
-                        <span class="label">Total Pending Amount</span>
-                    </div>
+    // Display summary
+    summaryContainer.innerHTML = `
+        <div class="summary-card">
+            <h2>Summary for ${agentName}</h2>
+            <div class="summary-stats">
+                <div class="stat-item">
+                    <span class="value">${pendingCases}</span>
+                    <span class="label">Pending Cases</span>
+                </div>
+                <div class="stat-item">
+                    <span class="value">₹${totalPendingAmount.toLocaleString('en-IN')}</span>
+                    <span class="label">Total Pending Amount</span>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
-        // Display individual account tiles
-        sortedData.forEach(account => {
-            const card = document.createElement('div');
-            card.classList.add('account-card');
-            card.innerHTML = `
-                <h3>${account['Customer Name']}</h3>
-                <p><strong>Start Date (Deposit Date):</strong> ${account['Deposit Date']}</p>
-                <p><strong>Installment:</strong> ₹${account['Installment']}</p>
-                <p><strong>Last Paid Date:</strong> ${account['Last Paid Date']}</p>
-                <p><strong>Total Amount Paid:</strong> ₹${account['Paid Amt']}</p>
-                <p><strong>Due Number:</strong> ${account['Due No']}</p>
-                <p><strong>Pending Amount:</strong> ₹${account['Pending Amount']}</p>
-            `;
-            resultsContainer.appendChild(card);
-        });
-    }
-    
-    // ... [Rest of the JavaScript code for autocomplete and event listeners remains unchanged] ...
+    // Display individual account tiles
+    sortedData.forEach(account => {
+        const card = document.createElement('div');
+        card.classList.add('account-card');
+        card.innerHTML = `
+            <h3>${account['Customer Name']}</h3>
+            <p><strong>Start Date (Deposit Date):</strong> ${account['Deposit Date']}</p>
+            <p><strong>Installment:</strong> ₹${account['Installment']}</p>
+            <p><strong>Last Paid Date:</strong> ${account['Last Paid Date']}</p>
+            <p><strong>Total Amount Paid:</strong> ₹${account['Paid Amt']}</p>
+            <p><strong>Due Number:</strong> ${account['Due No']}</p>
+            <p><strong>Pending Amount:</strong> ₹${account['Pending Amount']}</p>
+        `;
+        resultsContainer.appendChild(card);
+    });
+}    // ... [Rest of the JavaScript code for autocomplete and event listeners remains unchanged] ...
     
     let currentFocus = -1;
 
