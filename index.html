@@ -3,21 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RD Account Details</title>
+    <title>Employee Wise RD Default Details</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>RD Account Details</h1>
-        <div class="search-box">
-            <label for="agent-search">Search by Employee Name:</label>
-            <input type="text" id="agent-search" placeholder="Start typing a name...">
-            <div id="autocomplete-suggestions" class="autocomplete-items"></div>
+        <div id="login-page">
+            <h1>Employee Wise RD Default Details</h1>
+            <p class="instruction-text">Enter one of your Customer's RD Number to Login. View Details of all accounts linked to you.</p>
+            <div class="search-box">
+                <label for="rd-number-input">Enter your Customer's RD Number:</label>
+                <input type="text" id="rd-number-input" placeholder="e.g., 2101001">
+                <button id="view-accounts-btn">View My Accounts</button>
+            </div>
+            <div id="login-message" class="message"></div>
         </div>
-        <div id="summary-container">
+
+        <div id="results-page" class="hidden">
+            <div class="header-container">
+                <button id="logout-btn">Log Out</button>
             </div>
-        <div id="results">
-            </div>
+            <div id="summary-container"></div>
+            <div id="results"></div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
