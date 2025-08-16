@@ -1,16 +1,44 @@
 document.addEventListener('DOMContentLoaded', () => {
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTxcZ5BVpz-jvCQze4msaEqv1uSUTS-Z-mulCPYUU9xvh0_8R4aDoMmOIMclJQbIeeVWAtA9qkyJ8Vv/pub?gid=717629748&single=true&output=csv';
+    const PASSWORD = 'mf01868';
+
+    // Page elements
     const loginPage = document.getElementById('login-page');
+    const passwordPage = document.getElementById('password-page');
     const resultsPage = document.getElementById('results-page');
+    const reportsPage = document.getElementById('reports-page');
+
+    // Login page elements
     const rdNumberInput = document.getElementById('rd-number-input');
     const viewAccountsBtn = document.getElementById('view-accounts-btn');
+    const reportsBtn = document.getElementById('reports-btn');
+    const loginMessage = document.getElementById('login-message');
+    const container = document.querySelector('.container');
+
+    // Password page elements
+    const passwordInput = document.getElementById('password-input');
+    const passwordSubmitBtn = document.getElementById('password-submit-btn');
+    const passwordBackBtn = document.getElementById('password-back-btn');
+    const passwordMessage = document.getElementById('password-message');
+
+    // Results page elements
     const logoutBtn = document.getElementById('logout-btn');
     const resultsContainer = document.getElementById('results');
     const summaryContainer = document.getElementById('summary-container');
-    const loginMessage = document.getElementById('login-message');
-    const container = document.querySelector('.container');
+
+    // Reports page elements
+    const homeFromReportsBtn = document.getElementById('home-from-reports-btn');
+    const overallReportContainer = document.getElementById('overall-report-container');
+    const recentReportContainer = document.getElementById('recent-report-container');
+    const companyReportContainer = document.getElementById('company-report-container');
+    const companySelect = document.getElementById('company-select');
+    const filterSinceAprilCheckbox = document.getElementById('filter-since-april');
+
     let rdAccounts = [];
+    let uniqueCompanies = [];
     const lastUpdatedDate = '15/08/2025';
+    // Define the start date string for easy comparison
+    const recentDateString = '2025-04-01';
 
     // Add the "Data Updated" message to the home page
     const dateMessage = document.createElement('p');
@@ -26,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             const csvText = await response.text();
             rdAccounts = parseCsv(csvText);
+            uniqueCompanies = [...new Set(rdAccounts.map(account => account['company']))].sort();
+            populateCompanySelect();
         } catch (error) {
             console.error('Error fetching CSV data:', error);
             loginMessage.textContent = 'Error loading data. Please check the CSV link.';
@@ -47,6 +77,80 @@ document.addEventListener('DOMContentLoaded', () => {
         return data;
     }
 
+    function calculateReportStats(data) {
+        const totalAccounts = data.length;
+
+        // Corrected calculation for Total Value
+        const totalValue = data.reduce((sum, account) => {
+            const paidAmt = parseFloat((account['Paid Amt'] || '0').replace(/,/g, ''));
+            const pendingAmt = parseFloat((account['Pending Amount'] || '0').replace(/,/g, ''));
+            return sum + (isNaN(paidAmt) ? 0 : paidAmt) + (isNaN(pendingAmt) ? 0 : pendingAmt);
+        }, 0);
+
+        const noDueAccounts = data.filter(account => parseFloat(account['Due No']) === 0);
+        const noDueCount = noDueAccounts.length;
+        // Corrected calculation for Value of No Due Accounts
+        const noDueValue = noDueAccounts.reduce((sum, account) => {
+            const paidAmt = parseFloat((account['Paid Amt'] || '0').replace(/,/g, ''));
+            return sum + (isNaN(paidAmt) ? 0 : paidAmt);
+        }, 0);
+
+        const pendingAccounts = data.filter(account => {
+            const pendingStr = account['Pending Amount'] || '0';
+            return parseFloat(pendingStr.replace(/,/g, '')) > 0;
+        });
+        const pendingCount = pendingAccounts.length;
+        // Calculation for Value of Pending Cases is already correct
+        const pendingValue = pendingAccounts.reduce((sum, account) => {
+            const valueStr = account['Pending Amount'] || '0';
+            const value = parseFloat(valueStr.replace(/,/g, ''));
+            return sum + (isNaN(value) ? 0 : value);
+        }, 0);
+
+        const noDuePercentage = totalAccounts > 0 ? ((noDueCount / totalAccounts) * 100).toFixed(2) : 0;
+        const pendingPercentage = totalAccounts > 0 ? ((pendingCount / totalAccounts) * 100).toFixed(2) : 0;
+
+        return {
+            totalAccounts,
+            totalValue,
+            noDueCount,
+            noDueValue,
+            pendingCount,
+            pendingValue,
+            noDuePercentage,
+            pendingPercentage
+        };
+    }
+
+    function displayReport(container, stats) {
+        container.innerHTML = `
+            <div class="report-stat-item">
+                <span class="report-label">Total Accounts</span>
+                <span class="report-value">${stats.totalAccounts}</span>
+            </div>
+            <div class="report-stat-item">
+                <span class="report-label">Total Value</span>
+                <span class="report-value">₹${stats.totalValue.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="report-stat-item">
+                <span class="report-label">Accounts with No Due</span>
+                <span class="report-value">${stats.noDueCount} (${stats.noDuePercentage}%)</span>
+            </div>
+            <div class="report-stat-item">
+                <span class="report-label">Value of No Due Accounts</span>
+                <span class="report-value">₹${stats.noDueValue.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="report-stat-item">
+                <span class="report-label">Total Pending Cases</span>
+                <span class="report-value">${stats.pendingCount} (${stats.pendingPercentage}%)</span>
+            </div>
+            <div class="report-stat-item">
+                <span class="report-label">Value of Pending Cases</span>
+                <span class="report-value">₹${stats.pendingValue.toLocaleString('en-IN')}</span>
+            </div>
+        `;
+    }
+
     function displayResults(data, agentName) {
         summaryContainer.innerHTML = '';
         resultsContainer.innerHTML = '';
@@ -57,11 +161,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const totalAccounts = data.length;
-        const pendingAccounts = data.filter(account => parseFloat(account['Pending Amount'].replace(/,/g, '')) > 0);
+        const pendingAccounts = data.filter(account => {
+            const pendingStr = account['Pending Amount'] || '0';
+            return parseFloat(pendingStr.replace(/,/g, '')) > 0;
+        });
         const pendingCases = pendingAccounts.length;
 
         const totalPendingAmount = pendingAccounts.reduce((sum, account) => {
-            const pendingAmt = parseFloat(account['Pending Amount'].replace(/,/g, ''));
+            const pendingStr = account['Pending Amount'] || '0';
+            const pendingAmt = parseFloat(pendingStr.replace(/,/g, ''));
             return sum + (isNaN(pendingAmt) ? 0 : pendingAmt);
         }, 0);
 
@@ -96,7 +204,8 @@ document.addEventListener('DOMContentLoaded', () => {
             card.classList.add('account-card');
 
             let pendingTag = '';
-            if (parseFloat(account['Pending Amount'].replace(/,/g, '')) > 0) {
+            const pendingStr = account['Pending Amount'] || '0';
+            if (parseFloat(pendingStr.replace(/,/g, '')) > 0) {
                 card.classList.add('pending-account');
                 pendingTag = `<span class="pending-tag">Pending Due</span>`;
             }
@@ -115,6 +224,102 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    function populateCompanySelect() {
+        companySelect.innerHTML = '<option value="all">All Companies</option>';
+        uniqueCompanies.forEach(company => {
+            const option = document.createElement('option');
+            option.value = company;
+            option.textContent = company;
+            companySelect.appendChild(option);
+        });
+    }
+
+    function generateReports() {
+        const overallStats = calculateReportStats(rdAccounts);
+        displayReport(overallReportContainer, overallStats);
+
+        const recentAccounts = rdAccounts.filter(account => {
+            const dateParts = (account['Deposit Date'] || '').split('-');
+            if (dateParts.length === 3) {
+                // Ensure day and month are two digits for correct string comparison
+                const day = dateParts[0].padStart(2, '0');
+                const month = dateParts[1].padStart(2, '0');
+                const year = dateParts[2];
+                const formattedDate = `${year}-${month}-${day}`;
+                return formattedDate >= recentDateString;
+            }
+            return false;
+        });
+
+        const recentStats = calculateReportStats(recentAccounts);
+        displayReport(recentReportContainer, recentStats);
+
+        displayCompanyReport();
+    }
+
+    function displayCompanyReport() {
+        const selectedCompany = companySelect.value;
+        const filterSinceApril = filterSinceAprilCheckbox.checked;
+
+        let filteredAccounts = rdAccounts;
+
+        if (selectedCompany !== 'all') {
+            filteredAccounts = filteredAccounts.filter(account => account['company'] === selectedCompany);
+        }
+
+        if (filterSinceApril) {
+            filteredAccounts = filteredAccounts.filter(account => {
+                const dateParts = (account['Deposit Date'] || '').split('-');
+                if (dateParts.length === 3) {
+                    const day = dateParts[0].padStart(2, '0');
+                    const month = dateParts[1].padStart(2, '0');
+                    const year = dateParts[2];
+                    const formattedDate = `${year}-${month}-${day}`;
+                    return formattedDate >= recentDateString;
+                }
+                return false;
+            });
+        }
+
+        const companyStats = calculateReportStats(filteredAccounts);
+        companyReportContainer.innerHTML = `
+            <div class="report-stat-item">
+                <span class="report-label">Total Accounts</span>
+                <span class="report-value">${companyStats.totalAccounts}</span>
+            </div>
+            <div class="report-stat-item">
+                <span class="report-label">Total Value</span>
+                <span class="report-value">₹${companyStats.totalValue.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="report-stat-item">
+                <span class="report-label">Accounts with No Due</span>
+                <span class="report-value">${companyStats.noDueCount} (${companyStats.noDuePercentage}%)</span>
+            </div>
+            <div class="report-stat-item">
+                <span class="report-label">Value of No Due Accounts</span>
+                <span class="report-value">₹${companyStats.noDueValue.toLocaleString('en-IN')}</span>
+            </div>
+            <div class="report-stat-item">
+                <span class="report-label">Total Pending Cases</span>
+                <span class="report-value">${companyStats.pendingCount} (${companyStats.pendingPercentage}%)</span>
+            </div>
+            <div class="report-stat-item">
+                <span class="report-label">Value of Pending Cases</span>
+                <span class="report-value">₹${companyStats.pendingValue.toLocaleString('en-IN')}</span>
+            </div>
+        `;
+    }
+
+    // --- Event Listeners and Page Navigation ---
+
+    function showPage(page) {
+        loginPage.classList.add('hidden');
+        passwordPage.classList.add('hidden');
+        resultsPage.classList.add('hidden');
+        reportsPage.classList.add('hidden');
+        page.classList.remove('hidden');
+    }
+
     function findAndDisplayAgentAccounts() {
         const rdNumber = rdNumberInput.value.trim().toLowerCase();
         loginMessage.textContent = '';
@@ -126,14 +331,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const singleAccount = rdAccounts.find(account => account['Deposit No'].toLowerCase() === rdNumber);
+        const singleAccount = rdAccounts.find(account => account['Deposit No'] && account['Deposit No'].toLowerCase() === rdNumber);
 
         if (singleAccount) {
             const agentName = singleAccount['Agent'];
             const filteredAccounts = rdAccounts.filter(account => account['Agent'] === agentName);
             displayResults(filteredAccounts, agentName);
-            loginPage.classList.add('hidden');
-            resultsPage.classList.remove('hidden');
+            showPage(resultsPage);
         } else {
             loginMessage.textContent = 'RD Number not found. Please try again.';
             loginMessage.classList.add('error-message');
@@ -145,11 +349,23 @@ document.addEventListener('DOMContentLoaded', () => {
         summaryContainer.innerHTML = '';
         resultsContainer.innerHTML = '';
         loginMessage.textContent = '';
-
-        resultsPage.classList.add('hidden');
-        loginPage.classList.remove('hidden');
+        showPage(loginPage);
     }
 
+    function handlePasswordCheck() {
+        passwordMessage.textContent = '';
+        passwordMessage.classList.remove('error-message');
+        if (passwordInput.value === PASSWORD) {
+            generateReports();
+            showPage(reportsPage);
+            passwordInput.value = '';
+        } else {
+            passwordMessage.textContent = 'Incorrect password. Please try again.';
+            passwordMessage.classList.add('error-message');
+        }
+    }
+
+    // Wire up event listeners
     viewAccountsBtn.addEventListener('click', findAndDisplayAgentAccounts);
     rdNumberInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
@@ -157,6 +373,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     logoutBtn.addEventListener('click', handleLogout);
+    reportsBtn.addEventListener('click', () => showPage(passwordPage));
+    passwordSubmitBtn.addEventListener('click', handlePasswordCheck);
+    passwordInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            handlePasswordCheck();
+        }
+    });
+    passwordBackBtn.addEventListener('click', () => showPage(loginPage));
+    homeFromReportsBtn.addEventListener('click', () => showPage(loginPage));
+    companySelect.addEventListener('change', displayCompanyReport);
+    filterSinceAprilCheckbox.addEventListener('change', displayCompanyReport);
 
     fetchCsvData();
 });
