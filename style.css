@@ -33,12 +33,19 @@ h1 {
     font-weight: 300;
 }
 
+h2 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
 .search-box {
     margin-bottom: 20px;
     text-align: center;
 }
 
-#rd-number-input {
+#rd-number-input, #password-input {
     width: 100%;
     padding: 12px;
     font-size: 16px;
@@ -48,12 +55,12 @@ h1 {
     transition: border-color 0.3s;
 }
 
-#rd-number-input:focus {
+#rd-number-input:focus, #password-input:focus {
     outline: none;
     border-color: var(--primary-color);
 }
 
-#view-accounts-btn {
+#view-accounts-btn, #password-submit-btn, #reports-btn, #password-back-btn {
     display: block;
     width: 100%;
     padding: 12px;
@@ -67,7 +74,7 @@ h1 {
     transition: background-color 0.3s ease;
 }
 
-#view-accounts-btn:hover {
+#view-accounts-btn:hover, #password-submit-btn:hover, #reports-btn:hover {
     background-color: #0056b3;
 }
 
@@ -200,14 +207,14 @@ h1 {
     display: none;
 }
 
-/* New: Styles for the "Log Out" button */
+/* Styles for buttons and header */
 .header-container {
     display: flex;
     justify-content: flex-end;
     margin-bottom: 20px;
 }
 
-#logout-btn {
+#logout-btn, #home-from-reports-btn, #password-back-btn {
     background-color: var(--secondary-color);
     color: white;
     border: none;
@@ -218,11 +225,17 @@ h1 {
     transition: background-color 0.3s ease;
 }
 
-#logout-btn:hover {
+#logout-btn:hover, #home-from-reports-btn:hover, #password-back-btn:hover {
     background-color: #5a6268;
 }
 
-/* New: Styles for the login instruction and message text */
+.menu-options {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
 .instruction-text {
     text-align: center;
     color: var(--secondary-color);
@@ -266,12 +279,71 @@ h1 {
     }
 }
 
+/* Reports Page Styles */
+.report-section {
+    margin-bottom: 30px;
+}
+
+.report-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.report-stat-item {
+    background-color: #f1f3f5;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Updated the order of label and value */
+.report-stat-item .report-label {
+    display: block;
+    font-size: 0.85em;
+    color: var(--secondary-color);
+    margin-top: 5px;
+    order: 1;
+}
+
+.report-stat-item .report-value {
+    display: block;
+    font-size: 1.6em;
+    font-weight: 700;
+    color: var(--primary-color);
+    order: 2;
+}
+
+.company-filter {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#company-select {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.filter-options {
+    text-align: center;
+    margin-top: -10px;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+}
+
+.filter-options input {
+    vertical-align: middle;
+}
+
 @media (max-width: 600px) {
-    .summary-stats {
+    .summary-stats, .report-stats {
         flex-direction: column;
         gap: 10px;
     }
-    .stat-item {
+    .stat-item, .report-stat-item {
         width: 100%;
     }
 }
