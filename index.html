@@ -12,11 +12,28 @@
             <h1>Employee Wise RD Default Details</h1>
             <p class="instruction-text">Enter one of your Customer's RD Number to Login. View Details of all accounts linked to you.</p>
             <div class="search-box">
-                <label for="rd-number-input">Enter your Customer's RD Number:</label>
+                <label for="rd-number-input">Enter your RD Number:</label>
                 <input type="text" id="rd-number-input" placeholder="e.g., 2101001">
                 <button id="view-accounts-btn">View My Accounts</button>
             </div>
+            <div class="menu-options">
+                <button id="reports-btn">Reports</button>
+            </div>
             <div id="login-message" class="message"></div>
+        </div>
+
+        <div id="password-page" class="hidden">
+            <h1>Reports Access</h1>
+            <p class="instruction-text">Please enter the password to view the reports.</p>
+            <div class="search-box">
+                <label for="password-input">Password:</label>
+                <input type="password" id="password-input">
+                <button id="password-submit-btn">Submit</button>
+            </div>
+            <div class="menu-options">
+                <button id="password-back-btn">Back to Home</button>
+            </div>
+            <div id="password-message" class="message"></div>
         </div>
 
         <div id="results-page" class="hidden">
@@ -25,6 +42,36 @@
             </div>
             <div id="summary-container"></div>
             <div id="results"></div>
+        </div>
+
+        <div id="reports-page" class="hidden">
+            <div class="header-container">
+                <button id="home-from-reports-btn">Home</button>
+            </div>
+            <div class="report-section">
+                <h2>Overall Report</h2>
+                <div id="overall-report-container" class="report-stats"></div>
+            </div>
+
+            <div class="report-section">
+                <h2>Report After April 2025</h2>
+                <div id="recent-report-container" class="report-stats"></div>
+            </div>
+
+            <div class="report-section">
+                <h2>Company Wise Report</h2>
+                <div class="company-filter">
+                    <label for="company-select">Select Company:</label>
+                    <select id="company-select"></select>
+                </div>
+                <div class="filter-options">
+                    <label for="filter-since-april">
+                        <input type="checkbox" id="filter-since-april">
+                        Show only accounts from April 2025
+                    </label>
+                </div>
+                <div id="company-report-container" class="report-stats"></div>
+            </div>
         </div>
     </div>
     <script src="script.js"></script>
