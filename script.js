@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let rdAccounts = [];
     let uniqueCompanies = [];
-    const lastUpdatedDate = '15/08/2025';
+    const lastUpdatedDate = '20/08/2025';
     // Define the start date string for easy comparison
     const recentDateString = '2025-04-01';
 
@@ -387,3 +387,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchCsvData();
 });
+
