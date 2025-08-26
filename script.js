@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTxcZ5BVpz-jvCQze4msaEqv1uSUTS-Z-mulCPYUU9xvh0_8R4aDoMmOIMclJQbIeeVWAtA9qkyJ8Vv/pub?gid=717629748&single=true&output=csv';
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/18K6X1q30z7zvi6zrOrrSWZSJpPULhP4INiMnknyVC9A/export?format=csv&gid=717629748';
     const PASSWORD = 'mf01868';
 
     // Page elements
@@ -387,4 +387,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchCsvData();
 });
+
 
