@@ -336,7 +336,19 @@ document.addEventListener('DOMContentLoaded', () => {
         if (singleAccount) {
             const agentName = singleAccount['Agent'];
             const filteredAccounts = rdAccounts.filter(account => account['Agent'] === agentName);
-            displayResults(filteredAccounts, agentName);
+
+            // Filter for unique RD Numbers to prevent duplicates
+            const uniqueRdNumbers = new Set();
+            const uniqueFilteredAccounts = filteredAccounts.filter(account => {
+                if (uniqueRdNumbers.has(account['Deposit No'])) {
+                    return false;
+                } else {
+                    uniqueRdNumbers.add(account['Deposit No']);
+                    return true;
+                }
+            });
+
+            displayResults(uniqueFilteredAccounts, agentName);
             showPage(resultsPage);
         } else {
             loginMessage.textContent = 'RD Number not found. Please try again.';
@@ -387,5 +399,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetchCsvData();
 });
-
-
